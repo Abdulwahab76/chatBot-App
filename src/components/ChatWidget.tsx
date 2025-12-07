@@ -5,6 +5,7 @@ import SendIcon from "./icons/SendIcon";
 import MaximizeIcon from "./icons/MaximizeIcon";
 import CloseIcon from "./icons/CloseIcon";
 import Minimize from "./icons/Minimize";
+import BouncingDots from "./BouncingDots";
 
 type Role = "user" | "assistant";
 
@@ -33,6 +34,7 @@ export default function ChatWidget() {
     const [loading, setLoading] = useState(false);
     const [openQuestions, setOpenQuestions] = useState(true);
     const [isEnlarged, setIsEnlarged] = useState(false);
+    const [showQuick, setShowQuick] = useState(true);
 
     const listRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -54,10 +56,10 @@ export default function ChatWidget() {
     }, [open]);
     const toggleOpen = () => {
         if (!open) {
-            const audio = new Audio();
-            audio.src = 'https://drive.google.com/file/d/1AkVj97x3E3rhXhSsakDtugMJwlg5pvnV/view'
+            const audio = new Audio('https://raw.githubusercontent.com/Abdulwahab76/chatBot-App/master/public/pop-cartoon.mp3');
             audio.play().catch(err => console.error("Audio playback failed:", err));
         }
+        setShowQuick(false)
         setOpen(v => !v);
         if (open) setOpenQuestions(true);
     };
@@ -77,17 +79,16 @@ export default function ChatWidget() {
         pushMessage("user", trimmed);
         setValue("");
         setLoading(true);
+        const audio = new Audio("https://raw.githubusercontent.com/Abdulwahab76/chatBot-App/master/public/new-notification.mp3");
 
         try {
             const reply = await askQuestion(trimmed);
             await new Promise((r) => setTimeout(r, 250));
-
-            const audio = new Audio("https://drive.google.com/file/d/13nFf4qhEZoTxxn3wjvIwcnieqB123rep/view?usp=sharing");
             audio.play().catch(() => { });
-
             pushMessage("assistant", reply);
         } catch {
             pushMessage("assistant", "Please try again.");
+            audio.play().catch(() => { });
         } finally {
             setLoading(false);
         }
@@ -100,11 +101,11 @@ export default function ChatWidget() {
         }
     };
 
-    const handlePresetClick = (text: string) => {
-        setValue(text);
-        if (!open) toggleOpen();
-        inputRef.current?.focus();
-    };
+    // const handlePresetClick = (text: string) => {
+    //     setValue(text);
+    //     if (!open) toggleOpen();
+    //     inputRef.current?.focus();
+    // };
 
     // Disable scroll when enlarged
     useEffect(() => {
@@ -213,7 +214,15 @@ export default function ChatWidget() {
             outline: "none",
             fontSize: "14px",
         },
-
+        loader: {
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            background: "#EE0C08",
+            padding: "8px 12px",
+            borderRadius: "10px",
+            width: 40,
+        },
         sendBtn: {
             background: "transparent",
             border: "none",
@@ -221,12 +230,93 @@ export default function ChatWidget() {
             padding: "6px",
             opacity: value.trim() ? 1 : 0.4,
         },
+        dot: {
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            background: "#555",
+            animation: "blink 1.4s infinite both",
+        },
+        quickPanel: {
+            position: "fixed",
+            bottom: "95px",        // stays above the toggle button
+            right: "30px",
+            background: "white",
+            padding: "10px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            display: "flex",
+            gap: "8px",
+            alignItems: "center",
+            zIndex: 999999,
+        },
+
+        quickBubble: {
+            padding: "6px 12px",
+            borderRadius: "14px",
+            border: "1px solid #ddd",
+            background: "#f6f6f6",
+            cursor: "pointer",
+            fontSize: "13px",
+            transition: "0.2s",
+            zIndex: -1
+        },
+
+        closeQuick: {
+            background: "#ff4d4d",
+            border: "none",
+            color: "white",
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "bold",
+        },
+
+        reopenQuick: {
+            position: "fixed",
+            bottom: "95px",
+            right: "30px",
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            border: "none",
+            background: "#ddd",
+            fontSize: "16px",
+            cursor: "pointer",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            fontWeight:600
+        }
     };
 
     return (
         <div>
+            {showQuick && (
+                <div style={styles.quickPanel}>
+                    {["Hello!", "Need help?", "What is pricing?"].map((q) => (
+                        <button
+                            key={q}
+                            style={styles.quickBubble}
+                            onClick={() => {
+                                setValue(q);
+                                setOpen(true)
+                                setShowQuick(false)  // fill input
+                            }}
+                        >
+                            {q}
+                        </button>
+                    ))}
+                    <button style={styles.closeQuick} onClick={() => setShowQuick(false)}>×</button>
+                </div>
+            )}
+            {/* REOPEN BUTTON */}
+            {!showQuick && (
+                <button style={styles.reopenQuick} onClick={() => setShowQuick(true)}>
+                    ?
+                </button>
+            )}
 
-            {/* Floating Chat Button */}
             <button style={styles.fab} onClick={toggleOpen}>
                 {open ? <CloseIcon /> : <BotIcon />}
             </button>
@@ -302,15 +392,8 @@ export default function ChatWidget() {
                             )}
                         </div>
                     ))}
+                    {loading && <BouncingDots />}
 
-
-
-
-                    {loading && (
-                        <div style={styles.msgRow("assistant")}>
-                            <div style={styles.bubble("assistant")}>Thinking...</div>
-                        </div>
-                    )}
                 </div>
 
                 {/* INPUT */}
