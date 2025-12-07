@@ -21,7 +21,7 @@ function uid(): string {
 }
 
 export default function ChatWidget() {
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>(() => {
         try {
             const raw = localStorage.getItem("chat_demo_history");
@@ -286,7 +286,7 @@ export default function ChatWidget() {
             fontSize: "16px",
             cursor: "pointer",
             boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            fontWeight:600
+            fontWeight: 600
         }
     };
 
