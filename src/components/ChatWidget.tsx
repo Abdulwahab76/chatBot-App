@@ -32,7 +32,6 @@ export default function ChatWidget() {
     });
     const [value, setValue] = useState("");
     const [loading, setLoading] = useState(false);
-    const [openQuestions, setOpenQuestions] = useState(true);
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showQuick, setShowQuick] = useState(true);
 
@@ -61,7 +60,6 @@ export default function ChatWidget() {
         }
         setShowQuick(false)
         setOpen(v => !v);
-        if (open) setOpenQuestions(true);
     };
 
 
